@@ -19,7 +19,7 @@ type Client struct {
 	metricsClientset *versioned.Clientset
 }
 
-func NewClient(kubeconfigPath, apiURL string) (*Client, error) {
+func NewClient(kubeconfigPath string) (*Client, error) {
 	var cfg *rest.Config
 	var err error
 

@@ -20,7 +20,6 @@ func Load() *Config {
 	cfg := &Config{
 		ServerPort:     getEnv("SERVER_PORT", "8080"),
 		KubeconfigPath: getEnv("KUBECONFIG_PATH", ""),
-		K3sAPIURL:      getEnv("K3S_API_URL", "https://127.0.0.1:6443"),
 		K3sToken:       getEnv("K3S_TOKEN", ""),
 		PrometheusURL:  getEnv("PROMETHEUS_URL", "http://127.0.0.1:30086"),
 		JWTSecret:      getEnv("JWT_SECRET", ""),

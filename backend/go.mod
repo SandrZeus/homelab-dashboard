@@ -3,6 +3,7 @@ module github.com/SandrZeus/homelab-dashboard
 go 1.25.0
 
 require (
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/joho/godotenv v1.5.1
 	k8s.io/api v0.35.2
 	k8s.io/apimachinery v0.35.2
