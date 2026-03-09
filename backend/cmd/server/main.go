@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/SandrZeus/homelab-dashboard/internal/api/handlers"
+	"github.com/SandrZeus/homelab-dashboard/internal/api/middleware"
+	"github.com/SandrZeus/homelab-dashboard/internal/auth"
 	"github.com/SandrZeus/homelab-dashboard/internal/config"
 	"github.com/SandrZeus/homelab-dashboard/internal/k3s"
 	"github.com/SandrZeus/homelab-dashboard/internal/prometheus"
@@ -25,8 +27,15 @@ func main() {
 		log.Fatalf("failed to create k3s client: %v", err)
 	}
 
-	podsHandler := handlers.NewPodsHandler(k3sClient)
 	promClient := prometheus.NewClient(cfg.PrometheusURL)
+
+	authService := auth.NewService(cfg.JWTSecret)
+	authHandler, err := handlers.NewAuthHandler(authService, cfg.AdminEmail, cfg.AdminPassword)
+	if err != nil {
+		log.Fatalf("failed to create auth handler: %v", err)
+	}
+
+	podsHandler := handlers.NewPodsHandler(k3sClient)
 	metricsHandler := handlers.NewMetricsHandler(promClient)
 
 	hub := ws.NewHub()
@@ -34,13 +43,18 @@ func main() {
 	hub.StartBroadcaster(k3sClient, promClient)
 
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, "ok")
 	})
-	mux.HandleFunc("/api/pods", podsHandler.GetPods)
-	mux.HandleFunc("/api/metrics/system", metricsHandler.GetSystemMetrics)
-	mux.HandleFunc("/ws", hub.ServeWS)
+
+	mux.HandleFunc("/api/auth/login", authHandler.Login)
+	mux.HandleFunc("/api/auth/refresh", authHandler.Refresh)
+
+	mux.HandleFunc("/api/pods", middleware.Auth(authService, podsHandler.GetPods))
+	mux.HandleFunc("/api/metrics/system", middleware.Auth(authService, metricsHandler.GetSystemMetrics))
+	mux.HandleFunc("/ws", middleware.Auth(authService, hub.ServeWS))
 
 	addr := ":" + cfg.ServerPort
 	log.Printf("server started on %s", addr)
