@@ -8,6 +8,7 @@ import (
 	"github.com/SandrZeus/homelab-dashboard/internal/api/handlers"
 	"github.com/SandrZeus/homelab-dashboard/internal/config"
 	"github.com/SandrZeus/homelab-dashboard/internal/k3s"
+	"github.com/SandrZeus/homelab-dashboard/internal/prometheus"
 	"github.com/joho/godotenv"
 )
 
@@ -25,12 +26,16 @@ func main() {
 
 	podsHandler := handlers.NewPodsHandler(k3sClient)
 
+	promClient := prometheus.NewClient(cfg.PrometheusURL)
+	metricsHandler := handlers.NewMetricsHandler(promClient)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, "ok")
 	})
 	mux.HandleFunc("/api/pods", podsHandler.GetPods)
+	mux.HandleFunc("/api/metrics/system", metricsHandler.GetSystemMetrics)
 
 	addr := ":" + cfg.ServerPort
 	log.Printf("server started on %s", addr)
