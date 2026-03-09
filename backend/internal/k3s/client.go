@@ -3,6 +3,7 @@ package k3s
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -10,10 +11,12 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
 type Client struct {
-	clientset *kubernetes.Clientset
+	clientset        *kubernetes.Clientset
+	metricsClientset *versioned.Clientset
 }
 
 func NewClient(kubeconfigPath, apiURL string) (*Client, error) {
@@ -34,17 +37,24 @@ func NewClient(kubeconfigPath, apiURL string) (*Client, error) {
 		return nil, fmt.Errorf("creating k3s clientset: %w", err)
 	}
 
-	return &Client{clientset: clientset}, nil
+	metricsClientset, err := versioned.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("creating metrics clientset: %w", err)
+	}
+
+	return &Client{clientset: clientset, metricsClientset: metricsClientset}, nil
 }
 
 type PodSummary struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	Phase     string `json:"phase"`
-	Node      string `json:"node"`
-	Restarts  int    `json:"restarts"`
-	Ready     bool   `json:"ready"`
-	Age       string `json:"age"`
+	Name        string `json:"name"`
+	Namespace   string `json:"namespace"`
+	Phase       string `json:"phase"`
+	Node        string `json:"node"`
+	Restarts    int    `json:"restarts"`
+	Ready       bool   `json:"ready"`
+	Age         string `json:"age"`
+	CPUCores    int64  `json:"cpuCores"`
+	MemoryBytes int64  `json:"memoryBytes"`
 }
 
 func (c *Client) GetPods() ([]PodSummary, error) {
@@ -53,9 +63,36 @@ func (c *Client) GetPods() ([]PodSummary, error) {
 		return nil, fmt.Errorf("listing pods: %w", err)
 	}
 
+	podMetrics, err := c.metricsClientset.MetricsV1beta1().PodMetricses("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		log.Printf("warning: could not fetch pod metrics: %v", err)
+	}
+
+	type resourceUsage struct {
+		cpuMillicores int64
+		memoryBytes   int64
+	}
+	usageMap := map[string]resourceUsage{}
+	if podMetrics != nil {
+		for _, pm := range podMetrics.Items {
+			key := pm.Namespace + "/" + pm.Name
+			var cpu, mem int64
+			for _, c := range pm.Containers {
+				cpu += c.Usage.Cpu().MilliValue()
+				mem += c.Usage.Memory().Value()
+			}
+			usageMap[key] = resourceUsage{cpuMillicores: cpu, memoryBytes: mem}
+		}
+	}
+
 	summaries := make([]PodSummary, 0, len(pods.Items))
 	for _, p := range pods.Items {
-		summaries = append(summaries, podToSummary(p))
+		s := podToSummary(p)
+		if usage, ok := usageMap[p.Namespace+"/"+p.Name]; ok {
+			s.CPUCores = usage.cpuMillicores
+			s.MemoryBytes = usage.memoryBytes
+		}
+		summaries = append(summaries, s)
 	}
 	return summaries, nil
 }
