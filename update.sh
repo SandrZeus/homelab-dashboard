@@ -23,8 +23,8 @@ cd ..
 
 echo "→ rebuilding image..."
 cp dist/homelab-dashboard backend/homelab-dashboard
-sudo docker build -t homelab-dashboard:latest backend/
-sudo docker save homelab-dashboard:latest | sudo k3s ctr images import -
+sudo docker build -t docker.io/library/homelab-dashboard:latest backend/
+sudo docker save docker.io/library/homelab-dashboard:latest | sudo k3s ctr images import -
 rm backend/homelab-dashboard
 
 sudo kubectl rollout restart deployment/homelab-dashboard -n homelab-dashboard

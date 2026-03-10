@@ -65,15 +65,14 @@ func main() {
 		log.Fatalf("failed to load static files: %v", err)
 	}
 
-	fileServer := http.FileServer(http.FS(stripped))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			_, err := stripped.(fs.StatFS).Stat(r.URL.Path[1:])
-			if err != nil {
-				r.URL.Path = "/"
-			}
+		f, err := stripped.Open(r.URL.Path[1:])
+		if err != nil {
+			r.URL.Path = "/"
+		} else {
+			f.Close()
 		}
-		fileServer.ServeHTTP(w, r)
+		http.FileServer(http.FS(stripped)).ServeHTTP(w, r)
 	})
 
 	addr := ":" + cfg.ServerPort
