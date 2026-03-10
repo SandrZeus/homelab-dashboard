@@ -15,17 +15,17 @@ cd ..
 
 echo "→ copying frontend build into backend..."
 rm -rf backend/static
-cp -r frontend/dist backend/static
+cp -r frontend/dist/* backend/cmd/server/static/
 
 echo "→ building Go binary..."
 cd backend
-go build -o ../dist/homelab-dashboard ./cmd/server/main.go
+go build -o ../dist/homelab-dashboard ./cmd/server/
 cd ..
 
 echo "→ building Docker image..."
 cp dist/homelab-dashboard backend/homelab-dashboard
-sudo docker build -t docker.io/library/homelab-dashboard:latest backend/
-sudo docker save docker.io/library/homelab-dashboard:latest | sudo k3s ctr images import -
+sudo podman build --no-cache -t docker.io/library/homelab-dashboard:latest backend/
+sudo podman save docker.io/library/homelab-dashboard:latest | sudo k3s ctr images import -
 rm backend/homelab-dashboard
 
 echo "→ generating secrets..."

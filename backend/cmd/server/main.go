@@ -3,9 +3,9 @@ package main
 import (
 	"embed"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/SandrZeus/homelab-dashboard/internal/api/handlers"
 	"github.com/SandrZeus/homelab-dashboard/internal/api/middleware"
@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//go:embed static
 var staticFiles embed.FS
 
 func main() {
@@ -60,19 +61,38 @@ func main() {
 	mux.HandleFunc("/api/metrics/system", middleware.Auth(authService, metricsHandler.GetSystemMetrics))
 	mux.HandleFunc("/ws", middleware.Auth(authService, hub.ServeWS))
 
-	stripped, err := fs.Sub(staticFiles, "static")
-	if err != nil {
-		log.Fatalf("failed to load static files: %v", err)
-	}
-
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		f, err := stripped.Open(r.URL.Path[1:])
-		if err != nil {
-			r.URL.Path = "/"
-		} else {
-			f.Close()
+		path := "static" + r.URL.Path
+		if r.URL.Path == "/" {
+			path = "static/index.html"
 		}
-		http.FileServer(http.FS(stripped)).ServeHTTP(w, r)
+
+		log.Printf("reading: %q", path)
+		content, err := staticFiles.ReadFile(path)
+		if err != nil {
+			log.Printf("read failed: %v, trying index.html", err)
+			content, err = staticFiles.ReadFile("static/index.html")
+			if err != nil {
+				log.Printf("index.html also failed: %v", err)
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+		}
+
+		switch {
+		case strings.HasSuffix(path, ".html"):
+			w.Header().Set("Content-Type", "text/html")
+		case strings.HasSuffix(path, ".js"):
+			w.Header().Set("Content-Type", "application/javascript")
+		case strings.HasSuffix(path, ".css"):
+			w.Header().Set("Content-Type", "text/css")
+		case strings.HasSuffix(path, ".svg"):
+			w.Header().Set("Content-Type", "image/svg+xml")
+		case strings.HasSuffix(path, ".ico"):
+			w.Header().Set("Content-Type", "image/x-icon")
+		}
+
+		w.Write(content)
 	})
 
 	addr := ":" + cfg.ServerPort
