@@ -1,0 +1,60 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  color: var(--text-primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.metric-sub {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.metric-progress-track {
+  margin-top: 0.75rem;
+  background: var(--progress-bg);
+  border-radius: 4px;
+  height: 4px;
+}
+
+.metric-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition:
+    width 0.5s ease,
+    background 0.3s ease;
+}
+
+.metric-progress-bar--low {
+  background: var(--accent-blue);
+}
+
+.metric-progress-bar--medium {
+  background: var(--accent-yellow);
+}
+
+.metric-progress-bar--high {
+  background: var(--accent-red);
+}

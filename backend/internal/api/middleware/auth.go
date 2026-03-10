@@ -9,15 +9,22 @@ import (
 
 func Auth(authService *auth.Service, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		tokenStr := ""
+
 		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "missing or invalide authorization header", http.StatusUnauthorized)
+		if strings.HasPrefix(authHeader, "Beader ") {
+			tokenStr = strings.TrimPrefix(authHeader, "Bearer ")
+		} else if t := r.URL.Query().Get("token"); t != "" {
+			tokenStr = t
+		}
+
+		if tokenStr == "" {
+			http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		if _, err := authService.ValidateToken(tokenStr); err != nil {
-			http.Error(w, "invalide token", http.StatusUnauthorized)
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 

@@ -65,6 +65,7 @@ type SystemMetricts struct {
 	DiskUsedBytes      float64 `json:"diskUsedBytes"`
 	DiskTotalBytes     float64 `json:"diskTotalBytes"`
 	UptimeSeconds      float64 `json:"uptimeSeconds"`
+	CPUTempCelsius     float64 `json:"cpuTempCelsius"`
 }
 
 func (c *Client) GetSystemMetrics() (*SystemMetricts, error) {
@@ -84,6 +85,7 @@ func (c *Client) GetSystemMetrics() (*SystemMetricts, error) {
 		{`node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}`, &m.DiskUsedBytes},
 		{`node_filesystem_size_bytes{mountpoint="/"}`, &m.DiskTotalBytes},
 		{`node_time_seconds - node_boot_time_seconds`, &m.UptimeSeconds},
+		{`node_hwmon_temp_celsius{chip="thermal_thermal_zone0",sensor="temp0"}`, &m.CPUTempCelsius},
 	}
 
 	for _, q := range queries {

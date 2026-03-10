@@ -58,7 +58,7 @@ func main() {
 
 	addr := ":" + cfg.ServerPort
 	log.Printf("server started on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, middleware.CORS(mux)); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
