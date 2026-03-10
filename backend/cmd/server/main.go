@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 
@@ -14,6 +16,8 @@ import (
 	"github.com/SandrZeus/homelab-dashboard/internal/ws"
 	"github.com/joho/godotenv"
 )
+
+var staticFiles embed.FS
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -55,6 +59,22 @@ func main() {
 	mux.HandleFunc("/api/pods", middleware.Auth(authService, podsHandler.GetPods))
 	mux.HandleFunc("/api/metrics/system", middleware.Auth(authService, metricsHandler.GetSystemMetrics))
 	mux.HandleFunc("/ws", middleware.Auth(authService, hub.ServeWS))
+
+	stripped, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		log.Fatalf("failed to load static files: %v", err)
+	}
+
+	fileServer := http.FileServer(http.FS(stripped))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			_, err := stripped.(fs.StatFS).Stat(r.URL.Path[1:])
+			if err != nil {
+				r.URL.Path = "/"
+			}
+		}
+		fileServer.ServeHTTP(w, r)
+	})
 
 	addr := ":" + cfg.ServerPort
 	log.Printf("server started on %s", addr)

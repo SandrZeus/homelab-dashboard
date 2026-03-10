@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homelab-dashboard
+  namespace: homelab-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homelab-dashboard
+  template:
+    metadata:
+      labels:
+        app: homelab-dashboard
+    spec:
+      serviceAccountName: homelab-dashboard
+      containers:
+        - name: homelab-dashboard
+          image: homelab-dashboard:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: PROMETHEUS_URL
+              value: "http://prometheus.monitoring.svc.cluster.local:9090"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: homelab-dashboard-secret
+                  key: JWT_SECRET
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: homelab-dashboard-secret
+                  key: ADMIN_EMAIL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: homelab-dashboard-secret
+                  key: ADMIN_PASSWORD
+            - name: DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: homelab-dashboard-secret
+                  key: DOMAIN
