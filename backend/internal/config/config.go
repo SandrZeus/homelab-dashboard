@@ -6,25 +6,27 @@ import (
 )
 
 type Config struct {
-	ServerPort     string
-	KubeconfigPath string
-	K3sAPIURL      string
-	K3sToken       string
-	PrometheusURL  string
-	JWTSecret      string
-	AdminEmail     string
-	AdminPassword  string
+	ServerPort       string
+	KubeconfigPath   string
+	K3sAPIURL        string
+	K3sToken         string
+	PrometheusURL    string
+	JWTSecret        string
+	AdminEmail       string
+	AdminPassword    string
+	ServicePatrolURL string
 }
 
 func Load() *Config {
 	cfg := &Config{
-		ServerPort:     getEnv("SERVER_PORT", "8080"),
-		KubeconfigPath: getEnv("KUBECONFIG_PATH", ""),
-		K3sToken:       getEnv("K3S_TOKEN", ""),
-		PrometheusURL:  getEnv("PROMETHEUS_URL", "http://127.0.0.1:30086"),
-		JWTSecret:      getEnv("JWT_SECRET", ""),
-		AdminEmail:     getEnv("ADMIN_EMAIL", ""),
-		AdminPassword:  getEnv("ADMIN_PASSWORD", ""),
+		ServerPort:       getEnv("SERVER_PORT", "8080"),
+		KubeconfigPath:   getEnv("KUBECONFIG_PATH", ""),
+		K3sToken:         getEnv("K3S_TOKEN", ""),
+		PrometheusURL:    getEnv("PROMETHEUS_URL", "http://127.0.0.1:30086"),
+		JWTSecret:        getEnv("JWT_SECRET", ""),
+		AdminEmail:       getEnv("ADMIN_EMAIL", ""),
+		AdminPassword:    getEnv("ADMIN_PASSWORD", ""),
+		ServicePatrolURL: getEnv("SERVICEPATROL_URL", ""),
 	}
 
 	if cfg.JWTSecret == "" {
