@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"github.com/SandrZeus/homelab-dashboard/internal/config"
 	"github.com/SandrZeus/homelab-dashboard/internal/k3s"
 	"github.com/SandrZeus/homelab-dashboard/internal/prometheus"
+	"github.com/SandrZeus/homelab-dashboard/internal/servicepatrol"
 	"github.com/SandrZeus/homelab-dashboard/internal/ws"
 	"github.com/joho/godotenv"
 )
@@ -40,6 +42,17 @@ func main() {
 		log.Fatalf("failed to create auth handler: %v", err)
 	}
 
+	var spChecker *servicepatrol.Checker
+	if cfg.ServicePatrolURL != "" {
+		spChecker = servicepatrol.NewChecker(cfg.ServicePatrolURL)
+		spChecker.Start(context.Background())
+		log.Printf("servicepatrol enabled: %s", cfg.ServicePatrolURL)
+	} else {
+		log.Printf("servicepatrol disabled: no ServicePatrolURL configured")
+	}
+
+	capabilitiesHandler := handlers.NewCapabilitiesHandler(spChecker)
+
 	podsHandler := handlers.NewPodsHandler(k3sClient)
 	metricsHandler := handlers.NewMetricsHandler(promClient)
 
@@ -61,13 +74,14 @@ func main() {
 	mux.HandleFunc("/api/metrics/system", middleware.Auth(authService, metricsHandler.GetSystemMetrics))
 	mux.HandleFunc("/ws", middleware.Auth(authService, hub.ServeWS))
 
+	mux.HandleFunc("/api/capabilities", capabilitiesHandler.Get)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := "static" + r.URL.Path
 		if r.URL.Path == "/" {
 			path = "static/index.html"
 		}
 
-		log.Printf("reading: %q", path)
 		content, err := staticFiles.ReadFile(path)
 		if err != nil {
 			log.Printf("read failed: %v, trying index.html", err)
