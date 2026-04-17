@@ -12,7 +12,7 @@ func Auth(authService *auth.Service, next http.HandlerFunc) http.HandlerFunc {
 		tokenStr := ""
 
 		authHeader := r.Header.Get("Authorization")
-		if strings.HasPrefix(authHeader, "Beader ") {
+		if strings.HasPrefix(authHeader, "Bearer ") {
 			tokenStr = strings.TrimPrefix(authHeader, "Bearer ")
 		} else if t := r.URL.Query().Get("token"); t != "" {
 			tokenStr = t

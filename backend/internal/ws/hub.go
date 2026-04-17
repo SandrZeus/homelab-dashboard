@@ -46,8 +46,9 @@ func (h *Hub) Run() {
 		case client := <-h.register:
 			h.mu.Lock()
 			h.clients[client] = true
+			total := len(h.clients)
 			h.mu.Unlock()
-			log.Printf("ws client connected, total: %d", len(h.clients))
+			log.Printf("ws client connected, total: %d", total)
 
 		case client := <-h.unregister:
 			h.mu.Lock()
@@ -55,8 +56,9 @@ func (h *Hub) Run() {
 				delete(h.clients, client)
 				close(client.send)
 			}
+			total := len(h.clients)
 			h.mu.Unlock()
-			log.Printf("ws client disconnected, total: %d", len(h.clients))
+			log.Printf("ws client disconnected, total: %d", total)
 
 		case message := <-h.broadcast:
 			h.mu.Lock()
@@ -116,7 +118,7 @@ func (c *Client) writePump() {
 			}
 		case <-ticker.C:
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Printf("ws pring error: %v", err)
+				log.Printf("ws ping error: %v", err)
 				return
 			}
 		}

@@ -31,7 +31,7 @@ func Load() *Config {
 		log.Fatal("JWT_SECRET is required")
 	}
 	if cfg.AdminEmail == "" || cfg.AdminPassword == "" {
-		log.Fatal("ADMIN_EMAIL abd ADMIN_PASSWORD are required")
+		log.Fatal("ADMIN_EMAIL and ADMIN_PASSWORD are required")
 	}
 
 	return cfg
