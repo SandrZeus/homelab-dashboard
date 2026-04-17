@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 
 	"github.com/SandrZeus/homelab-dashboard/internal/api/handlers"
@@ -53,6 +54,15 @@ func main() {
 
 	capabilitiesHandler := handlers.NewCapabilitiesHandler(spChecker)
 
+	var spProxy *httputil.ReverseProxy
+	if cfg.ServicePatrolURL != "" {
+		var err error
+		spProxy, err = servicepatrol.NewProxy(cfg.ServicePatrolURL)
+		if err != nil {
+			log.Fatalf("failed to create servicepatrol proxy: %v", err)
+		}
+	}
+
 	podsHandler := handlers.NewPodsHandler(k3sClient)
 	metricsHandler := handlers.NewMetricsHandler(promClient)
 
@@ -75,6 +85,10 @@ func main() {
 	mux.HandleFunc("/ws", middleware.Auth(authService, hub.ServeWS))
 
 	mux.HandleFunc("/api/capabilities", capabilitiesHandler.Get)
+
+	if spProxy != nil {
+		mux.Handle("/api/servicepatrol/", middleware.Auth(authService, spProxy.ServeHTTP))
+	}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := "static" + r.URL.Path
