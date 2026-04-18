@@ -50,7 +50,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error("Unauthorized");
   }
 
-  if (!res.ok) throw new Error("Request failed: ${res.status}");
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
 }
 
