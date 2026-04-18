@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { getAccessToken, setAccessToken } from "./api/client";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import { AppLayout } from "./components/layout/AppLayout";
+import ServicePatrol from "./pages/ServicePatrol";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -29,6 +31,7 @@ export default function App() {
           setAccessToken(data.accessToken);
         }
       } catch {
+        // pass
       } finally {
         setReady(true);
       }
@@ -42,13 +45,15 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route
-        path="/"
         element={
           <PrivateRoute>
-            <Dashboard />
+            <AppLayout />
           </PrivateRoute>
         }
-      />
+      >
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/servicepatrol" element={<ServicePatrol />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

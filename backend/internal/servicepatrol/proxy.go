@@ -1,6 +1,7 @@
 package servicepatrol
 
 import (
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -22,6 +23,13 @@ func NewProxy(upstreamURL string) (*httputil.ReverseProxy, error) {
 				r.Out.URL.Path = "/"
 			}
 			r.Out.Header.Del("Accept-Emcoding")
+		},
+		ModifyResponse: func(r *http.Response) error {
+			r.Header.Del("Access-Control-Allow-Origin")
+			r.Header.Del("Access-Control-Allow-Methods")
+			r.Header.Del("Access-Control-Allow-Headers")
+			r.Header.Del("Access-Control-Allow-Credentials")
+			return nil
 		},
 	}
 
