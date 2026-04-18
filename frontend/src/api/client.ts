@@ -1,3 +1,11 @@
+import type {
+  PodSummary,
+  SystemMetrics,
+  Capabilities,
+  Target,
+  Check,
+} from "../types";
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 let accessToken: string | null = null;
@@ -50,6 +58,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error("Unauthorized");
   }
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
 }
@@ -77,8 +88,34 @@ export const api = {
       credentials: "include",
     }),
 
-  getPods: () => request<import("../types").PodSummary[]>("/api/pods"),
+  getPods: () => request<PodSummary[]>("/api/pods"),
 
-  getSystemMetrics: () =>
-    request<import("../types").SystemMetrics>("/api/metrics/system"),
+  getSystemMetrics: () => request<SystemMetrics>("/api/metrics/system"),
+
+  getCapabilities: () => request<Capabilities>("/api/capabilities"),
+
+  getTargets: () => request<Target[]>("/api/servicepatrol/targets"),
+
+  createTarget: (target: Omit<Target, "id" | "created_at" | "updated_at">) =>
+    request<Target>("/api/servicepatrol/targets", {
+      method: "POST",
+      body: JSON.stringify(target),
+    }),
+
+  updateTarget: (
+    id: number,
+    target: Omit<Target, "id" | "created_at" | "updated_at">,
+  ) =>
+    request<Target>(`/api/servicepatrol/targets/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(target),
+    }),
+
+  deleteTarget: (id: number) =>
+    request<void>(`/api/servicepatrol/targets/${id}`, {
+      method: "DELETE",
+    }),
+
+  getTargetHistory: (id: number, limit = 50) =>
+    request<Check[]>(`/api/servicepatrol/targets/${id}/history?limit=${limit}`),
 };
