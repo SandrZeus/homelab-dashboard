@@ -25,6 +25,8 @@ spec:
               value: "8080"
             - name: PROMETHEUS_URL
               value: "http://prometheus.monitoring.svc.cluster.local:9090"
+            - name: SERVICEPATROL_URL
+              value: "http://servicepatrol.servicepatrol.svc.cluster.local:8080"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
