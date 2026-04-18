@@ -12,7 +12,6 @@ cd frontend
 npm install --silent
 npm run build
 cd ..
-
 rm -rf backend/static
 cp -r frontend/dist/* backend/cmd/server/static/
 
@@ -27,6 +26,10 @@ sudo podman build --no-cache -t docker.io/library/homelab-dashboard:latest backe
 sudo podman save docker.io/library/homelab-dashboard:latest | sudo k3s ctr images import -
 rm backend/homelab-dashboard
 
+echo "→ applying manifests..."
+sudo kubectl apply -f deploy/
+
+echo "→ restarting deployment..."
 sudo kubectl rollout restart deployment/homelab-dashboard -n homelab-dashboard
 sudo kubectl rollout status deployment/homelab-dashboard -n homelab-dashboard
 
