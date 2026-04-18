@@ -19,7 +19,7 @@ type Config struct {
 
 func Load() *Config {
 	cfg := &Config{
-		ServerPort:       getEnv("SERVER_PORT", "8080"),
+		ServerPort:       getEnv("SERVER_PORT", "8081"),
 		KubeconfigPath:   getEnv("KUBECONFIG_PATH", ""),
 		K3sToken:         getEnv("K3S_TOKEN", ""),
 		PrometheusURL:    getEnv("PROMETHEUS_URL", "http://127.0.0.1:30086"),

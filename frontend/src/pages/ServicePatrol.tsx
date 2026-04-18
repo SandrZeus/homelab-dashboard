@@ -1,9 +1,19 @@
-import { useServicePatrolTargets } from "../hooks/useServicePatrolTargets";
+import {
+  useServicePatrolTargets,
+  useDeleteTarget,
+} from "../hooks/useServicePatrolTargets";
 import { TargetList } from "../components/servicepatrol/TargetList";
+import type { Target } from "../types";
 import "../styles/components/servicepatrol.css";
 
 export default function ServicePatrol() {
   const { data: targets, isLoading, isError } = useServicePatrolTargets();
+  const deleteMutation = useDeleteTarget();
+
+  const handleDelete = (target: Target) => {
+    if (!confirm(`Delete target "${target.name}"?`)) return;
+    deleteMutation.mutate(target.id);
+  };
 
   return (
     <div className="sp-page">
@@ -24,7 +34,9 @@ export default function ServicePatrol() {
         <p className="sp-empty">No targets configured yet.</p>
       )}
 
-      {targets && targets.length > 0 && <TargetList targets={targets} />}
+      {targets && targets.length > 0 && (
+        <TargetList targets={targets} onDelete={handleDelete} />
+      )}
     </div>
   );
 }

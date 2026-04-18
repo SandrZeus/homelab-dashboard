@@ -3,9 +3,8 @@ import { getAccessToken } from "../api/client";
 import type { DashboardUpdate } from "../types";
 
 const WS_URL =
-  import.meta.env.VITE_WS_URL ||
   (window.location.protocol === "https:" ? "wss://" : "ws://") +
-    window.location.host;
+  window.location.host;
 
 export function useWebSocket() {
   const [data, setData] = useState<DashboardUpdate | null>(null);

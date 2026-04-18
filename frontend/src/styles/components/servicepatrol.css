@@ -115,6 +115,7 @@
 .sp-cell-actions {
   text-align: right;
   white-space: nowrap;
+  width: 1%;
 }
 
 .sp-action-btn {

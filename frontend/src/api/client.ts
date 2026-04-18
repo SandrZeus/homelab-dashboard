@@ -6,7 +6,7 @@ import type {
   Check,
 } from "../types";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+const BASE_URL = "";
 
 let accessToken: string | null = null;
 
