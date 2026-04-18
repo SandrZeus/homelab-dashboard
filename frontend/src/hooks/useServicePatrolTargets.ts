@@ -44,3 +44,12 @@ export function useDeleteTarget() {
     },
   });
 }
+
+export function useTargetHistory(id: number | null, limit = 50) {
+  return useQuery({
+    queryKey: ["servicepatrol", "history", id],
+    queryFn: () => api.getTargetHistory(id!, limit),
+    enabled: id !== null,
+    staleTime: 5_000,
+  });
+}
