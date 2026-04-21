@@ -5,8 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { AppLayout } from "./components/layout/AppLayout";
 import ServicePatrol from "./pages/ServicePatrol";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+import { WebSocketProvider } from "./hooks/useWebSocket";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   return getAccessToken() ? <>{children}</> : <Navigate to="/login" replace />;
@@ -17,12 +16,8 @@ export default function App() {
 
   useEffect(() => {
     async function tryRestore() {
-      if (getAccessToken()) {
-        setReady(true);
-        return;
-      }
       try {
-        const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
+        const res = await fetch("/api/auth/refresh", {
           method: "POST",
           credentials: "include",
         });
@@ -31,7 +26,6 @@ export default function App() {
           setAccessToken(data.accessToken);
         }
       } catch {
-        // pass
       } finally {
         setReady(true);
       }
@@ -47,7 +41,9 @@ export default function App() {
       <Route
         element={
           <PrivateRoute>
-            <AppLayout />
+            <WebSocketProvider>
+              <AppLayout />
+            </WebSocketProvider>
           </PrivateRoute>
         }
       >
