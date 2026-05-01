@@ -24,6 +24,6 @@ func (h *MetricsHandler) GetSystemMetrics(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(metrics)
 }

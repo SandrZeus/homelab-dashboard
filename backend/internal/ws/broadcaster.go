@@ -30,7 +30,7 @@ func (h *Hub) StartBroadcaster(k3sClient *k3s.Client, promClient *prometheus.Cli
 func (h *Hub) broadcastUpdate(k3sClient *k3s.Client, promClient *prometheus.Client) {
 	pods, err := k3sClient.GetPods()
 	if err != nil {
-		log.Printf("braodcaster: failed to get pods: %v", err)
+		log.Printf("broadcaster: failed to get pods: %v", err)
 		return
 	}
 

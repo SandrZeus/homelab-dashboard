@@ -74,12 +74,13 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "refresh_token",
 		Value:    refreshToken,
 		HttpOnly: true,
+		Secure:   true,
 		Path:     "/",
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		SameSite: http.SameSiteStrictMode,
 	})
 
-	w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(loginResponse{AccessToken: accessToken})
 }
 
@@ -102,6 +103,6 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(loginResponse{AccessToken: accessToken})
 }

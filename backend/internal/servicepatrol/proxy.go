@@ -22,7 +22,7 @@ func NewProxy(upstreamURL string) (*httputil.ReverseProxy, error) {
 			if r.Out.URL.Path == "" {
 				r.Out.URL.Path = "/"
 			}
-			r.Out.Header.Del("Accept-Emcoding")
+			r.Out.Header.Del("Accept-Encoding")
 		},
 		ModifyResponse: func(r *http.Response) error {
 			r.Header.Del("Access-Control-Allow-Origin")
