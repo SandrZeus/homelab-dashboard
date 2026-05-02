@@ -14,6 +14,7 @@ type Config struct {
 	JWTSecret        string
 	AdminEmail       string
 	AdminPassword    string
+	PostgresURL      string
 	ServicePatrolURL string
 }
 
@@ -26,6 +27,7 @@ func Load() *Config {
 		JWTSecret:        getEnv("JWT_SECRET", ""),
 		AdminEmail:       getEnv("ADMIN_EMAIL", ""),
 		AdminPassword:    getEnv("ADMIN_PASSWORD", ""),
+		PostgresURL:      getEnv("POSTGRES_URL", ""),
 		ServicePatrolURL: getEnv("SERVICEPATROL_URL", ""),
 	}
 
@@ -34,6 +36,9 @@ func Load() *Config {
 	}
 	if cfg.AdminEmail == "" || cfg.AdminPassword == "" {
 		log.Fatal("ADMIN_EMAIL and ADMIN_PASSWORD are required")
+	}
+	if cfg.PostgresURL == "" {
+		log.Fatal("POSTGRES_URL is required")
 	}
 
 	return cfg

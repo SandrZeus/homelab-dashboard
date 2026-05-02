@@ -13,6 +13,7 @@ import (
 	"github.com/SandrZeus/homelab-dashboard/internal/api/middleware"
 	"github.com/SandrZeus/homelab-dashboard/internal/auth"
 	"github.com/SandrZeus/homelab-dashboard/internal/config"
+	"github.com/SandrZeus/homelab-dashboard/internal/db"
 	"github.com/SandrZeus/homelab-dashboard/internal/k3s"
 	"github.com/SandrZeus/homelab-dashboard/internal/prometheus"
 	"github.com/SandrZeus/homelab-dashboard/internal/servicepatrol"
@@ -29,6 +30,14 @@ func main() {
 	}
 
 	cfg := config.Load()
+
+	pool, err := db.Init(context.Background(), cfg.PostgresURL)
+	if err != nil {
+		log.Fatalf("could not connect to the database: %v", err)
+	}
+	if err := db.Migrate(pool); err != nil {
+		log.Fatalf("could not run migrations: %v", err)
+	}
 
 	k3sClient, err := k3s.NewClient(cfg.KubeconfigPath)
 	if err != nil {
